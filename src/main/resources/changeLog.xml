@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="Dmitri">
+        <sql>
+            CREATE TABLE tags
+            (
+            id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+            name character varying(100) NOT NULL,
+            CONSTRAINT tags_pkey PRIMARY KEY (id)
+            )
+        </sql>
+    </changeSet>
+    <changeSet id="2" author="Dmitri">
+        <sql>
+            CREATE TABLE gift_certificates
+            (
+            id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+            name character varying(100) NOT NULL,
+            description text,
+            price numeric(6,2),
+            duration int NOT NULL,
+            create_date timestamp without time zone NOT NULL,
+            last_update_date timestamp without time zone NOT NULL,
+            CONSTRAINT gift_certificates_pkey PRIMARY KEY (id)
+            )
+        </sql>
+    </changeSet>
+    <changeSet id="3" author="Dmitri">
+        <sql>
+            CREATE TABLE gift_certificate_tags
+            (
+            gift_certificate_id bigint NOT NULL,
+            tag_id bigint NOT NULL,
+            CONSTRAINT gift_certificate_tags_gift_certificate_id_fk FOREIGN KEY (gift_certificate_id)
+            REFERENCES public.gift_certificates (id) ON DELETE CASCADE,
+            CONSTRAINT gift_certificate_tags_tag_id_fk FOREIGN KEY (tag_id)
+            REFERENCES public.tags (id) ON DELETE CASCADE
+            )
+        </sql>
+    </changeSet>
+    <changeSet id="4" author="Dmitri">
+        <sql>
+            CREATE TYPE role_type AS enum('ADMIN','USER','GUEST');
+
+            CREATE TABLE public.roles
+            (
+            id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+            name role_type,
+            CONSTRAINT roles_pkey PRIMARY KEY (id)
+            );
+        </sql>
+    </changeSet>
+    <changeSet id="5" author="Dmitri">
+        <sql>
+            INSERT INTO roles(name) VALUES ('ADMIN');
+            INSERT INTO roles(name) VALUES ('USER');
+            INSERT INTO roles(name) VALUES ('GUEST');
+        </sql>
+    </changeSet>
+    <changeSet id="6" author="Dmitri">
+        <sql>
+            CREATE TYPE user_status_type AS enum('ACTIVE','BLOCKED');
+
+            CREATE TABLE public.statuses
+            (
+            id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+            name user_status_type,
+            CONSTRAINT statuses_pkey PRIMARY KEY (id)
+            );
+        </sql>
+    </changeSet>
+    <changeSet id="7" author="Dmitri">
+        <sql>
+            INSERT INTO statuses(name) VALUES ('ACTIVE');
+            INSERT INTO statuses(name) VALUES ('BLOCKED');
+        </sql>
+    </changeSet>
+    <changeSet id="8" author="Dmitri">
+        <sql>
+            CREATE TABLE users
+            (
+            id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+            first_name character varying(100),
+            last_name character varying(100),
+            username character varying(100) NOT NULL,
+            email character varying(100) NOT NULL,
+            password character varying(100) NOT NULL,
+            role_id bigint NOT NULL,
+            status_id bigint NOT NULL,
+            CONSTRAINT users_pkey PRIMARY KEY (id),
+            CONSTRAINT users_role_id_fk FOREIGN KEY (role_id)
+            REFERENCES public.roles (id) ON DELETE CASCADE,
+            CONSTRAINT users_status_id_fk FOREIGN KEY (status_id)
+            REFERENCES public.statuses (id) ON DELETE CASCADE
+            )
+        </sql>
+    </changeSet>
+    <changeSet id="9" author="Dmitri">
+        <sql>
+            CREATE TABLE orders
+            (
+            id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+            cost numeric(19,2),
+            create_date timestamp without time zone NOT NULL,
+            user_id bigint,
+            CONSTRAINT orders_pkey PRIMARY KEY (id),
+            CONSTRAINT orders_user_id_fk FOREIGN KEY (user_id)
+            REFERENCES public.users (id) ON DELETE CASCADE
+            )
+        </sql>
+    </changeSet>
+    <changeSet id="10" author="Dmitri">
+        <sql>
+            CREATE TABLE order_items
+            (
+            id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+            quantity int NOT NULL,
+            order_id bigint NOT NULL,
+            gift_certificate_id bigint NOT NULL,
+            CONSTRAINT order_items_pkey PRIMARY KEY (id),
+            CONSTRAINT order_items_order_id_fk FOREIGN KEY (order_id)
+            REFERENCES public.orders (id) ON DELETE CASCADE,
+            CONSTRAINT order_items_gift_certificate_id_fk FOREIGN KEY (gift_certificate_id)
+            REFERENCES public.gift_certificates (id) ON DELETE CASCADE
+            )
+        </sql>
+    </changeSet>
+</databaseChangeLog>

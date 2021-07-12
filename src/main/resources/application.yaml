@@ -1,0 +1,14 @@
+server:
+  port: 8081
+spring:
+  messages:
+    basename: ${messages.basename:messages}
+    encoding: UTF-8
+  liquibase:
+    change-log: ${path.changelog:changeLog.xml}
+    enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

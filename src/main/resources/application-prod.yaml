@@ -1,0 +1,35 @@
+spring:
+  config:
+    import: ${import.location:classpath:application.yaml}
+  datasource:
+    username: ${datasource.username:postgres}
+    password: ${datasource.password:1234}
+    driver-class-name: ${datasource.driver:org.postgresql.Driver}
+    url: ${datasource.url:jdbc:postgresql://localhost:5432/rest_api_basics_db}
+    hikari:
+      minimum-idle: ${pool.min:8}
+      maximum-pool-size: ${pool.max:32}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL9Dialect
+logging:
+  level:
+    org:
+      springframework:
+        transaction:
+          interceptor: TRACE
+    com:
+      epam:
+        esm:
+          model:
+            creator: DEBUG
+
+
+
+#  main:
+#    allow-bean-definition-overriding: true
+#debug: true
