@@ -130,4 +130,15 @@ public class UserController {
                 .map(tagModel -> new ResponseEntity<>(tagModel, HttpStatus.OK))
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND, new Object[]{}));
     }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> signUpUser(@RequestBody User user) {
+        Optional<User> optionalUser = userService.createUser(user);
+        if (optionalUser.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }
