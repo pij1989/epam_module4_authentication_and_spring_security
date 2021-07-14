@@ -1,9 +1,9 @@
 package com.epam.esm.model.service;
 
 import com.epam.esm.model.entity.Order;
-import com.epam.esm.model.entity.Page;
 import com.epam.esm.model.entity.Tag;
 import com.epam.esm.model.entity.User;
+import org.springframework.data.domain.Page;
 
 import java.util.Optional;
 
@@ -23,4 +23,6 @@ public interface UserService {
     Optional<Order> findOrderForUser(Long userId, Long orderId);
 
     Optional<Tag> findWidelyUsedTagForUserWithHighestCostOfAllOrders();
+
+    Optional<User> signUpUser(User user);
 }

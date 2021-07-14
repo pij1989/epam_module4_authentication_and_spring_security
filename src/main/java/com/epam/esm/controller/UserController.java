@@ -1,8 +1,6 @@
 package com.epam.esm.controller;
 
-import com.epam.esm.model.creator.PageModelCreator;
 import com.epam.esm.model.entity.Order;
-import com.epam.esm.model.entity.Page;
 import com.epam.esm.model.entity.Tag;
 import com.epam.esm.model.entity.User;
 import com.epam.esm.model.exception.NotFoundException;
@@ -16,6 +14,8 @@ import com.epam.esm.model.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -23,7 +23,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 import static com.epam.esm.model.error.MessageKeyError.*;
@@ -78,10 +77,11 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<PagedModel<UserModel>> findUsers(@RequestParam(name = "page", defaultValue = RequestParameter.DEFAULT_PAGE_NUMBER) Integer page,
-                                                           @RequestParam(name = "size", defaultValue = RequestParameter.DEFAULT_PAGE_SIZE) Integer size) throws NotFoundException {
+                                                           @RequestParam(name = "size", defaultValue = RequestParameter.DEFAULT_PAGE_SIZE) Integer size,
+                                                           PagedResourcesAssembler<User> pagedResourcesAssembler) throws NotFoundException {
         Page<User> userPage = userService.findUsers(page, size);
-        if (!userPage.getList().isEmpty()) {
-            PagedModel<UserModel> userModels = PageModelCreator.create(userPage, userModelAssembler);
+        if (!userPage.isEmpty()) {
+            PagedModel<UserModel> userModels = pagedResourcesAssembler.toModel(userPage, userModelAssembler);
             return new ResponseEntity<>(userModels, HttpStatus.OK);
         } else {
             throw new NotFoundException(USERS_NOT_FOUND, new Object[]{});
@@ -91,14 +91,14 @@ public class UserController {
     @GetMapping("/{userId}/orders")
     public ResponseEntity<PagedModel<OrderModel>> findOrdersForUser(@PathVariable Long userId,
                                                                     @RequestParam(name = "page", defaultValue = RequestParameter.DEFAULT_PAGE_NUMBER) Integer page,
-                                                                    @RequestParam(name = "size", defaultValue = RequestParameter.DEFAULT_PAGE_SIZE) Integer size) throws NotFoundException {
+                                                                    @RequestParam(name = "size", defaultValue = RequestParameter.DEFAULT_PAGE_SIZE) Integer size,
+                                                                    PagedResourcesAssembler<Order> pagedResourcesAssembler) throws NotFoundException {
         Page<Order> orderPage = userService.findOrdersForUser(userId, page, size);
-        List<Order> orders = orderPage.getList();
-        if (orders == null) {
+        if (orderPage == null) {
             throw new NotFoundException(USER_NOT_FOUND, new Object[]{userId});
         }
-        if (!orders.isEmpty()) {
-            PagedModel<OrderModel> orderModels = PageModelCreator.create(orderPage, orderModelAssembler);
+        if (!orderPage.isEmpty()) {
+            PagedModel<OrderModel> orderModels = pagedResourcesAssembler.toModel(orderPage, orderModelAssembler);
             return new ResponseEntity<>(orderModels, HttpStatus.OK);
         } else {
             throw new NotFoundException(USER_ORDERS_NOT_FOUND, new Object[]{userId});
@@ -130,15 +130,4 @@ public class UserController {
                 .map(tagModel -> new ResponseEntity<>(tagModel, HttpStatus.OK))
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND, new Object[]{}));
     }
-
-    @PostMapping("/signup")
-    public ResponseEntity<?> signUpUser(@RequestBody User user) {
-        Optional<User> optionalUser = userService.createUser(user);
-        if (optionalUser.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-    }
-
 }
