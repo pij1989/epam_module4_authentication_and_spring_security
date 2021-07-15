@@ -33,11 +33,15 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // https://mvnrepository.com/artifact/com.h2database/h2
     testImplementation group: 'com.h2database', name: 'h2', version: '1.4.200'
+
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 }
 
 test {
     useJUnitPlatform()
 }
+
+compileJava.inputs.files(processResources)
 
 group 'com.epam.esm'
 version '1.0-SNAPSHOT'
