@@ -25,4 +25,6 @@ public interface UserService {
     Optional<Tag> findWidelyUsedTagForUserWithHighestCostOfAllOrders();
 
     Optional<User> signUpUser(User user);
+
+    boolean existsByUsername(String username);
 }
