@@ -38,9 +38,9 @@ public class JwtTokenUtil {
 
     }
 
-    public boolean validateJwtToken(String authToken) {
+    public boolean validate(String token) {
         try {
-            Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken);
+            Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
             return true;
         } catch (SignatureException e) {
             logger.error("Invalid JWT signature: {}", e.getMessage());
