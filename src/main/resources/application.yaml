@@ -13,5 +13,5 @@ management:
       exposure:
         include: "*"
 jwt:
-  secret: pozharsky
-  expiration: 1800000
+  secret: ${secret:pozharsky}
+  expiration: ${expiration:1800000} #30 min
