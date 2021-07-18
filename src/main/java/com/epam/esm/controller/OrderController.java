@@ -13,6 +13,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -33,6 +34,7 @@ public class OrderController {
         this.orderModelAssembler = orderModelAssembler;
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<OrderModel> createOrder(@RequestBody Order order) {
         logger.debug("ORDER: " + order);
@@ -46,6 +48,7 @@ public class OrderController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<OrderModel> findOrder(@PathVariable Long id) throws NotFoundException {
         Optional<Order> optionalOrder = orderService.findOrder(id);
@@ -58,6 +61,7 @@ public class OrderController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @PutMapping("/{orderId}/gift_certificates/{certificateId}")
     public ResponseEntity<OrderModel> addGiftCertificateToOrder(@PathVariable Long orderId,
                                                                 @PathVariable Long certificateId,

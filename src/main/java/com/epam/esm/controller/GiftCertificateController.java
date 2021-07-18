@@ -1,8 +1,6 @@
 package com.epam.esm.controller;
 
-import com.epam.esm.model.creator.PageModelCreator;
 import com.epam.esm.model.entity.GiftCertificate;
-import com.epam.esm.model.entity.Page;
 import com.epam.esm.model.entity.Tag;
 import com.epam.esm.model.exception.BadRequestException;
 import com.epam.esm.model.exception.NotFoundException;
@@ -14,12 +12,15 @@ import com.epam.esm.model.service.GiftCertificateService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +47,7 @@ public class GiftCertificateController {
         this.tagModelAssembler = tagModelAssembler;
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<GiftCertificateModel> createGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
         Optional<GiftCertificate> optionalGiftCertificate = giftCertificateService.createGiftCertificate(giftCertificate);
@@ -67,10 +69,12 @@ public class GiftCertificateController {
 
     @GetMapping
     public ResponseEntity<PagedModel<GiftCertificateModel>> findGiftCertificates(@RequestParam(name = "page", defaultValue = DEFAULT_PAGE_NUMBER) Integer page,
-                                                                                 @RequestParam(name = "size", defaultValue = DEFAULT_PAGE_SIZE) Integer size) throws NotFoundException {
+                                                                                 @RequestParam(name = "size", defaultValue = DEFAULT_PAGE_SIZE) Integer size,
+                                                                                 PagedResourcesAssembler<GiftCertificate> resourcesAssembler) throws NotFoundException {
         Page<GiftCertificate> giftCertificatePage = giftCertificateService.findGiftCertificates(page, size);
-        if (!giftCertificatePage.getList().isEmpty()) {
-            PagedModel<GiftCertificateModel> certificateModels = PageModelCreator.create(giftCertificatePage, giftCertificateModelAssembler);
+        logger.error("GIFT CERTIFICATES: " + giftCertificatePage.toList());
+        if (!giftCertificatePage.isEmpty()) {
+            PagedModel<GiftCertificateModel> certificateModels = resourcesAssembler.toModel(giftCertificatePage, giftCertificateModelAssembler);
             return new ResponseEntity<>(certificateModels, HttpStatus.OK);
         } else {
             throw new NotFoundException(NOT_FOUND, new Object[]{});
@@ -80,10 +84,11 @@ public class GiftCertificateController {
     @GetMapping(params = {"tagName"})
     public ResponseEntity<PagedModel<GiftCertificateModel>> findGiftCertificateByTagName(@RequestParam("tagName") String name,
                                                                                          @RequestParam(name = "page", defaultValue = DEFAULT_PAGE_NUMBER) Integer page,
-                                                                                         @RequestParam(name = "size", defaultValue = DEFAULT_PAGE_SIZE) Integer size) throws NotFoundException {
+                                                                                         @RequestParam(name = "size", defaultValue = DEFAULT_PAGE_SIZE) Integer size,
+                                                                                         PagedResourcesAssembler<GiftCertificate> resourcesAssembler) throws NotFoundException {
         Page<GiftCertificate> giftCertificatePage = giftCertificateService.findGiftCertificateByTagName(name, page, size);
-        if (!giftCertificatePage.getList().isEmpty()) {
-            PagedModel<GiftCertificateModel> certificateModels = PageModelCreator.create(giftCertificatePage, giftCertificateModelAssembler);
+        if (!giftCertificatePage.isEmpty()) {
+            PagedModel<GiftCertificateModel> certificateModels = resourcesAssembler.toModel(giftCertificatePage, giftCertificateModelAssembler);
             return new ResponseEntity<>(certificateModels, HttpStatus.OK);
         } else {
             throw new NotFoundException(CERTIFICATE_NOT_FOUND_TAG_NAME, new Object[]{name});
@@ -93,10 +98,11 @@ public class GiftCertificateController {
     @GetMapping(params = {"filter"})
     public ResponseEntity<PagedModel<GiftCertificateModel>> searchGiftCertificate(@RequestParam("filter") String filter,
                                                                                   @RequestParam(name = "page", defaultValue = DEFAULT_PAGE_NUMBER) Integer page,
-                                                                                  @RequestParam(name = "size", defaultValue = DEFAULT_PAGE_SIZE) Integer size) throws NotFoundException {
+                                                                                  @RequestParam(name = "size", defaultValue = DEFAULT_PAGE_SIZE) Integer size,
+                                                                                  PagedResourcesAssembler<GiftCertificate> resourcesAssembler) throws NotFoundException {
         Page<GiftCertificate> giftCertificatePage = giftCertificateService.searchGiftCertificate(filter, page, size);
-        if (!giftCertificatePage.getList().isEmpty()) {
-            PagedModel<GiftCertificateModel> certificateModels = PageModelCreator.create(giftCertificatePage, giftCertificateModelAssembler);
+        if (!giftCertificatePage.isEmpty()) {
+            PagedModel<GiftCertificateModel> certificateModels = resourcesAssembler.toModel(giftCertificatePage, giftCertificateModelAssembler);
             return new ResponseEntity<>(certificateModels, HttpStatus.OK);
         } else {
             throw new NotFoundException(NOT_FOUND, new Object[]{});
@@ -107,16 +113,18 @@ public class GiftCertificateController {
     public ResponseEntity<PagedModel<GiftCertificateModel>> sortGiftCertificate(@RequestParam("sort") String sort,
                                                                                 @RequestParam("order") String order,
                                                                                 @RequestParam(name = "page", defaultValue = DEFAULT_PAGE_NUMBER) Integer page,
-                                                                                @RequestParam(name = "size", defaultValue = DEFAULT_PAGE_SIZE) Integer size) throws BadRequestException, NotFoundException {
+                                                                                @RequestParam(name = "size", defaultValue = DEFAULT_PAGE_SIZE) Integer size,
+                                                                                PagedResourcesAssembler<GiftCertificate> resourcesAssembler) throws BadRequestException, NotFoundException {
         Page<GiftCertificate> giftCertificatePage = giftCertificateService.sortGiftCertificate(sort, order, page, size);
-        if (!giftCertificatePage.getList().isEmpty()) {
-            PagedModel<GiftCertificateModel> certificateModels = PageModelCreator.create(giftCertificatePage, giftCertificateModelAssembler);
+        if (!giftCertificatePage.isEmpty()) {
+            PagedModel<GiftCertificateModel> certificateModels = resourcesAssembler.toModel(giftCertificatePage, giftCertificateModelAssembler);
             return new ResponseEntity<>(certificateModels, HttpStatus.OK);
         } else {
             throw new NotFoundException(NOT_FOUND, new Object[]{});
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{certificateId}")
     public ResponseEntity<GiftCertificateModel> updateGiftCertificate(@RequestBody GiftCertificate giftCertificate,
                                                                       @PathVariable Long certificateId) throws NotFoundException {
@@ -125,6 +133,7 @@ public class GiftCertificateController {
                 .orElseThrow(() -> new NotFoundException(CERTIFICATE_NOT_FOUND_ID, new Object[]{certificateId}));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/{certificateId}")
     public ResponseEntity<GiftCertificateModel> updatePartOfGiftCertificate(@RequestBody GiftCertificate giftCertificate,
                                                                             @PathVariable Long certificateId) throws NotFoundException {
@@ -133,6 +142,7 @@ public class GiftCertificateController {
                 .orElseThrow(() -> new NotFoundException(CERTIFICATE_NOT_FOUND_ID, new Object[]{certificateId}));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("{certificateId}/tags")
     public ResponseEntity<TagModel> createTagInGiftCertificate(@PathVariable Long certificateId,
                                                                @RequestBody Tag tag,
@@ -146,6 +156,7 @@ public class GiftCertificateController {
         }).orElseThrow(() -> new BadRequestException(CERTIFICATE_BAD_REQUEST_TAG_CREATED));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("{certificateId}/tags/{tagId}")
     public ResponseEntity<Object> addTagToGiftCertificate(@PathVariable Long certificateId,
                                                           @PathVariable Long tagId) throws NotFoundException {
@@ -156,6 +167,7 @@ public class GiftCertificateController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{certificateId}")
     public ResponseEntity<Object> deleteGiftCertificate(@PathVariable Long certificateId) throws NotFoundException {
         if (giftCertificateService.deleteGiftCertificate(certificateId)) {
@@ -165,6 +177,7 @@ public class GiftCertificateController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/{certificateId}/price")
     public ResponseEntity<GiftCertificateModel> updatePriceOfGiftCertificate(@RequestBody GiftCertificate giftCertificate,
                                                                              @PathVariable Long certificateId) throws NotFoundException {
@@ -176,10 +189,11 @@ public class GiftCertificateController {
     @GetMapping(params = {"tagname"})
     public ResponseEntity<PagedModel<GiftCertificateModel>> searchGiftCertificateByTags(@RequestParam("tagname") String[] tagNames,
                                                                                         @RequestParam(name = "page", defaultValue = DEFAULT_PAGE_NUMBER) Integer page,
-                                                                                        @RequestParam(name = "size", defaultValue = DEFAULT_PAGE_SIZE) Integer size) throws NotFoundException {
+                                                                                        @RequestParam(name = "size", defaultValue = DEFAULT_PAGE_SIZE) Integer size,
+                                                                                        PagedResourcesAssembler<GiftCertificate> resourcesAssembler) throws NotFoundException {
         Page<GiftCertificate> certificatePage = giftCertificateService.searchGiftCertificateByTags(tagNames, page, size);
-        if (!certificatePage.getList().isEmpty()) {
-            PagedModel<GiftCertificateModel> certificateModels = PageModelCreator.create(certificatePage, giftCertificateModelAssembler);
+        if (!certificatePage.isEmpty()) {
+            PagedModel<GiftCertificateModel> certificateModels = resourcesAssembler.toModel(certificatePage, giftCertificateModelAssembler);
             return new ResponseEntity<>(certificateModels, HttpStatus.OK);
         } else {
             throw new NotFoundException(NOT_FOUND, new Object[]{});

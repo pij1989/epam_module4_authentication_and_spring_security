@@ -16,6 +16,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class TagController {
         this.tagModelAssembler = tagModelAssembler;
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<TagModel> createTag(@RequestBody Tag tag) {
         Optional<Tag> optionalTag = tagService.create(tag);
@@ -83,6 +85,7 @@ public class TagController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteTag(@PathVariable Long id) throws NotFoundException {
         if (tagService.deleteTag(id)) {

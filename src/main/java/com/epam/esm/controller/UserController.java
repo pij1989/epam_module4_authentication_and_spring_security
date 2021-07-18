@@ -21,6 +21,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -45,6 +46,7 @@ public class UserController {
         this.tagModelAssembler = tagModelAssembler;
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<UserModel> createUser(@RequestBody User user) {
         logger.debug("USER: " + user);
@@ -58,6 +60,7 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @PostMapping("/{userId}/orders")
     public ResponseEntity<OrderModel> createUserOrder(@PathVariable Long userId, @RequestBody Order order) throws NotFoundException {
         logger.debug("USER'S ORDER:" + order);
@@ -67,6 +70,7 @@ public class UserController {
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND, new Object[]{userId}));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UserModel> findUser(@PathVariable Long id) throws NotFoundException {
         Optional<User> optionalUser = userService.findUser(id);
@@ -75,6 +79,7 @@ public class UserController {
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND, new Object[]{id}));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<PagedModel<UserModel>> findUsers(@RequestParam(name = "page", defaultValue = RequestParameter.DEFAULT_PAGE_NUMBER) Integer page,
                                                            @RequestParam(name = "size", defaultValue = RequestParameter.DEFAULT_PAGE_SIZE) Integer size,
@@ -88,6 +93,7 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/{userId}/orders")
     public ResponseEntity<PagedModel<OrderModel>> findOrdersForUser(@PathVariable Long userId,
                                                                     @RequestParam(name = "page", defaultValue = RequestParameter.DEFAULT_PAGE_NUMBER) Integer page,
@@ -105,6 +111,7 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/{userId}/orders/{orderId}")
     public ResponseEntity<OrderModel> findOrderForUser(@PathVariable Long userId,
                                                        @PathVariable Long orderId) throws NotFoundException {
@@ -114,6 +121,7 @@ public class UserController {
                 .orElseThrow(() -> new NotFoundException(USER_OR_ORDER_NOT_FOUND, new Object[]{userId, orderId}));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{userId}/orders/{orderId}")
     public ResponseEntity<UserModel> addOrderToUser(@PathVariable Long userId,
                                                     @PathVariable Long orderId) throws NotFoundException {
@@ -123,6 +131,7 @@ public class UserController {
                 .orElseThrow(() -> new NotFoundException(USER_OR_ORDER_NOT_FOUND, new Object[]{userId, orderId}));
     }
 
+    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/widely_used_tag")
     public ResponseEntity<TagModel> findWidelyUsedTagForUserWithHighestCostOfAllOrders() throws NotFoundException {
         Optional<Tag> optionalTag = userService.findWidelyUsedTagForUserWithHighestCostOfAllOrders();
