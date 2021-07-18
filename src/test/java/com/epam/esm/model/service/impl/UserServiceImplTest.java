@@ -1,15 +1,19 @@
 package com.epam.esm.model.service.impl;
 
-import com.epam.esm.model.dao.OrderDao;
-import com.epam.esm.model.dao.TagDao;
-import com.epam.esm.model.dao.UserDao;
 import com.epam.esm.model.entity.*;
+import com.epam.esm.model.repository.OrderRepository;
+import com.epam.esm.model.repository.TagRepository;
+import com.epam.esm.model.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -30,13 +34,16 @@ class UserServiceImplTest {
     private User updatedUser;
 
     @Mock
-    private UserDao userDao;
+    private UserRepository userRepository;
 
     @Mock
-    private OrderDao orderDao;
+    private OrderRepository orderRepository;
 
     @Mock
-    private TagDao tagDao;
+    private TagRepository tagRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -88,7 +95,10 @@ class UserServiceImplTest {
 
     @Test
     void createUser() {
-        when(userDao.create(user)).thenReturn(user);
+        String encodePassword = "m5YQjQifDUhq9wjencode";
+        when(userRepository.save(user)).thenReturn(user);
+        when(passwordEncoder.encode(user.getPassword())).thenReturn(encodePassword);
+        user.setPassword(encodePassword);
         Optional<User> actual = userService.createUser(user);
         Optional<User> expect = Optional.of(user);
         assertEquals(expect, actual);
@@ -96,7 +106,7 @@ class UserServiceImplTest {
 
     @Test
     void findUser() {
-        when(userDao.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         Optional<User> actual = userService.findUser(1L);
         Optional<User> expect = Optional.of(user);
         assertEquals(expect, actual);
@@ -104,9 +114,9 @@ class UserServiceImplTest {
 
     @Test
     void addOrderToUser() {
-        when(userDao.findById(1L)).thenReturn(Optional.of(user));
-        when(orderDao.findById(2L)).thenReturn(Optional.of(secondOrder));
-        when(userDao.update(user)).thenReturn(Optional.of(updatedUser));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(orderRepository.findById(2L)).thenReturn(Optional.of(secondOrder));
+        when(userRepository.save(user)).thenReturn(updatedUser);
         Optional<User> actual = userService.addOrderToUser(1L, 2L);
         Optional<User> expect = Optional.of(updatedUser);
         assertEquals(expect, actual);
@@ -114,9 +124,9 @@ class UserServiceImplTest {
 
     @Test
     void createOrderForUser() {
-        when(userDao.findById(1L)).thenReturn(Optional.of(user));
-        when(orderDao.create(secondOrder)).thenReturn(secondOrder);
-        when(userDao.update(user)).thenReturn(Optional.of(updatedUser));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(orderRepository.save(secondOrder)).thenReturn(secondOrder);
+        when(userRepository.save(user)).thenReturn(updatedUser);
         Optional<Order> actual = userService.createOrderForUser(1L, secondOrder);
         Optional<Order> expect = Optional.of(secondOrder);
         assertEquals(expect, actual);
@@ -124,28 +134,28 @@ class UserServiceImplTest {
 
     @Test
     void findUsers() {
-        when(userDao.countUser()).thenReturn(1L);
-        when(userDao.findUsersWithLimitAndOffset(0, 5)).thenReturn(List.of(user));
-        Page<User> expect = new Page<>(List.of(user), 1, 1, 1, 5);
+        List<User> users = new ArrayList<>();
+        users.add(user);
+        Page<User> page = new PageImpl<>(users);
+        when(userRepository.findAllByOrderByIdAsc(PageRequest.of(0, 5))).thenReturn(page);
         Page<User> actual = userService.findUsers(1, 5);
-        assertEquals(expect, actual);
+        assertEquals(page, actual);
     }
 
     @Test
     void findOrdersForUser() {
-        when(userDao.findById(1L)).thenReturn(Optional.of(user));
-        when(orderDao.countOrder()).thenReturn(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         List<Order> orders = new ArrayList<>(user.getOrders());
-        when(orderDao.findOrdersWithLimitAndOffset(0, 5)).thenReturn(orders);
-        Page<Order> expect = new Page<>(orders, 1, 1, 1, 5);
+        when(orderRepository.findAllByOrderByIdAsc(PageRequest.of(0, 5))).thenReturn(new PageImpl<>(orders));
+        Page<Order> expect = new PageImpl<>(orders);
         Page<Order> actual = userService.findOrdersForUser(1L, 1, 5);
         assertEquals(expect, actual);
     }
 
     @Test
     void findOrderForUser() {
-        when(userDao.findById(1L)).thenReturn(Optional.of(user));
-        when(orderDao.findById(1L)).thenReturn(Optional.of(firstOrder));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(firstOrder));
         Optional<Order> actual = userService.findOrderForUser(1L, 1L);
         Optional<Order> expect = Optional.of(firstOrder);
         assertEquals(expect, actual);
@@ -156,8 +166,8 @@ class UserServiceImplTest {
         Tag tag = new Tag();
         tag.setId(1L);
         tag.setName("Tag name");
-        when(userDao.findUserWithMaxSumCostOrders()).thenReturn(Optional.of(user));
-        when(tagDao.findMaxCountTagByUserId(1L)).thenReturn(Optional.of(tag));
+        when(userRepository.findUserWithMaxSumCostOrders()).thenReturn(Optional.of(user));
+        when(tagRepository.findMaxCountTagByUserId(1L)).thenReturn(Optional.of(tag));
         Optional<Tag> actual = userService.findWidelyUsedTagForUserWithHighestCostOfAllOrders();
         Optional<Tag> expect = Optional.of(tag);
         assertEquals(expect, actual);

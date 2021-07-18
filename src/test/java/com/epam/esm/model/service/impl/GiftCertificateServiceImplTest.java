@@ -1,16 +1,18 @@
 package com.epam.esm.model.service.impl;
 
-import com.epam.esm.model.dao.GiftCertificateDao;
-import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.entity.GiftCertificate;
-import com.epam.esm.model.entity.Page;
 import com.epam.esm.model.entity.Tag;
+import com.epam.esm.model.repository.GiftCertificateRepository;
+import com.epam.esm.model.repository.TagRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -29,10 +31,10 @@ class GiftCertificateServiceImplTest {
     private GiftCertificate giftCertificate;
 
     @Mock
-    private GiftCertificateDao giftCertificateDao;
+    private GiftCertificateRepository giftCertificateRepository;
 
     @Mock
-    private TagDao tagDao;
+    private TagRepository tagRepository;
 
     @InjectMocks
     private GiftCertificateServiceImpl giftCertificateService;
@@ -55,24 +57,24 @@ class GiftCertificateServiceImplTest {
 
     @Test
     void createGiftCertificate() {
-        when(giftCertificateDao.create(giftCertificate)).thenReturn(giftCertificate);
+        when(giftCertificateRepository.save(giftCertificate)).thenReturn(giftCertificate);
         Optional<GiftCertificate> actual = giftCertificateService.createGiftCertificate(giftCertificate);
-        verify(giftCertificateDao, times(1)).create(giftCertificate);
+        verify(giftCertificateRepository, times(1)).save(giftCertificate);
         assertEquals(Optional.of(giftCertificate), actual);
     }
 
     @Test
     void findGiftCertificate() {
-        when(giftCertificateDao.findById(1L)).thenReturn(Optional.of(giftCertificate));
+        when(giftCertificateRepository.findById(1L)).thenReturn(Optional.of(giftCertificate));
         Optional<GiftCertificate> actual = giftCertificateService.findGiftCertificate(1L);
         assertEquals(Optional.of(giftCertificate), actual);
     }
 
     @Test
     void findAllGiftCertificate() {
-        when(giftCertificateDao.findAll()).thenReturn(List.of(new GiftCertificate(), new GiftCertificate()));
+        when(giftCertificateRepository.findAll()).thenReturn(List.of(new GiftCertificate(), new GiftCertificate()));
         List<GiftCertificate> actual = giftCertificateService.findAllGiftCertificate();
-        verify(giftCertificateDao, times(1)).findAll();
+        verify(giftCertificateRepository, times(1)).findAll();
         assertEquals(2, actual.size());
     }
 
@@ -80,10 +82,10 @@ class GiftCertificateServiceImplTest {
     void updateGiftCertificate() {
         giftCertificate.setName("Updated gift certificate name");
         giftCertificate.setDescription("Updated gift certificate description");
-        when(giftCertificateDao.update(giftCertificate)).thenReturn(Optional.of(giftCertificate));
-        when(giftCertificateDao.findById(1L)).thenReturn(Optional.of(giftCertificate));
+        when(giftCertificateRepository.save(giftCertificate)).thenReturn(giftCertificate);
+        when(giftCertificateRepository.findById(1L)).thenReturn(Optional.of(giftCertificate));
         Optional<GiftCertificate> actual = giftCertificateService.updateGiftCertificate(giftCertificate, 1L);
-        verify(giftCertificateDao, times(1)).update(giftCertificate);
+        verify(giftCertificateRepository, times(1)).save(giftCertificate);
         assertEquals(Optional.of(giftCertificate), actual);
     }
 
@@ -92,28 +94,28 @@ class GiftCertificateServiceImplTest {
         Tag tag = new Tag();
         tag.setId(1L);
         tag.setName("Tag name");
-        when(giftCertificateDao.findById(1L)).thenReturn(Optional.of(new GiftCertificate()));
-        when(giftCertificateDao.addTagToCertificate(1L, 1L)).thenReturn(true);
-        when(tagDao.create(tag)).thenReturn(tag);
+        when(giftCertificateRepository.findById(1L)).thenReturn(Optional.of(new GiftCertificate()));
+        when(giftCertificateRepository.addTagToCertificate(1L, 1L)).thenReturn(true);
+        when(tagRepository.save(tag)).thenReturn(tag);
         Optional<Tag> actual = giftCertificateService.createTagInGiftCertificate(1L, tag);
         assertEquals(Optional.of(tag), actual);
     }
 
     @Test
     void addTagToGiftCertificate() {
-        when(giftCertificateDao.addTagToCertificate(1L, 1L)).thenReturn(true);
-        when(giftCertificateDao.findById(1L)).thenReturn(Optional.of(new GiftCertificate()));
-        when(tagDao.findById(1L)).thenReturn(Optional.of(new Tag()));
+        when(giftCertificateRepository.addTagToCertificate(1L, 1L)).thenReturn(true);
+        when(giftCertificateRepository.findById(1L)).thenReturn(Optional.of(new GiftCertificate()));
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(new Tag()));
         boolean condition = giftCertificateService.addTagToGiftCertificate(1L, 1L);
-        verify(giftCertificateDao, times(1)).addTagToCertificate(1L, 1L);
+        verify(giftCertificateRepository, times(1)).addTagToCertificate(1L, 1L);
         assertTrue(condition);
     }
 
     @Test
     void deleteGiftCertificate() {
-        when(giftCertificateDao.deleteById(1L)).thenReturn(true);
+        when(giftCertificateRepository.findById(1L)).thenReturn(Optional.of(giftCertificate));
         boolean condition = giftCertificateService.deleteGiftCertificate(1L);
-        verify(giftCertificateDao, times(1)).deleteById(1L);
+        verify(giftCertificateRepository, times(1)).delete(giftCertificate);
         assertTrue(condition);
     }
 
@@ -122,11 +124,10 @@ class GiftCertificateServiceImplTest {
         String name = "name";
         List<GiftCertificate> giftCertificates = new ArrayList<>();
         giftCertificates.add(new GiftCertificate());
-        when(giftCertificateDao.countGiftCertificateByTagName(name)).thenReturn(10L);
-        when(giftCertificateDao.findGiftCertificatesByTagNameWithOffsetAndLimit(name, 0, 5)).thenReturn(giftCertificates);
+        Page<GiftCertificate> page = new PageImpl<>(giftCertificates);
+        when(giftCertificateRepository.findAllByTagName(name, PageRequest.of(0,5))).thenReturn(page);
         Page<GiftCertificate> actual = giftCertificateService.findGiftCertificateByTagName(name, 1, 5);
-        Page<GiftCertificate> expect = new Page<>(giftCertificates, 2, 10, 1, 5);
-        assertEquals(expect, actual);
+        assertEquals(page, actual);
     }
 
     @Test
@@ -134,10 +135,9 @@ class GiftCertificateServiceImplTest {
         String name = "name";
         List<GiftCertificate> giftCertificates = new ArrayList<>();
         giftCertificates.add(new GiftCertificate());
-        when(giftCertificateDao.countGiftCertificateLikeNameOrDescription(name)).thenReturn(10L);
-        when(giftCertificateDao.findGiftCertificateLikeNameOrDescription(name, 0, 5)).thenReturn(giftCertificates);
-        Page<GiftCertificate> actual = giftCertificateService.searchGiftCertificate(name, 1, 5);
-        Page<GiftCertificate> expect = new Page<>(giftCertificates, 2, 10, 1, 5);
-        assertEquals(expect, actual);
+        Page<GiftCertificate> page = new PageImpl<>(giftCertificates);
+        when(giftCertificateRepository.findAllByTagName(name, PageRequest.of(0,5))).thenReturn(page);
+        Page<GiftCertificate> actual = giftCertificateService.findGiftCertificateByTagName(name, 1, 5);
+        assertEquals(page, actual);
     }
 }

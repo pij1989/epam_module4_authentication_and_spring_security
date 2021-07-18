@@ -1,11 +1,11 @@
 package com.epam.esm.model.service.impl;
 
-import com.epam.esm.model.dao.GiftCertificateDao;
-import com.epam.esm.model.dao.OrderDao;
-import com.epam.esm.model.dao.OrderItemDao;
 import com.epam.esm.model.entity.GiftCertificate;
 import com.epam.esm.model.entity.Order;
 import com.epam.esm.model.entity.OrderItem;
+import com.epam.esm.model.repository.GiftCertificateRepository;
+import com.epam.esm.model.repository.OrderItemRepository;
+import com.epam.esm.model.repository.OrderRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,13 +29,13 @@ class OrderServiceImplTest {
     private OrderItem orderItem;
 
     @Mock
-    private OrderDao orderDao;
+    private OrderRepository orderRepository;
 
     @Mock
-    private OrderItemDao orderItemDao;
+    private OrderItemRepository orderItemRepository;
 
     @Mock
-    private GiftCertificateDao giftCertificateDao;
+    private GiftCertificateRepository giftCertificateRepository;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -70,7 +70,7 @@ class OrderServiceImplTest {
 
     @Test
     void createOrder() {
-        when(orderDao.create(order)).thenReturn(order);
+        when(orderRepository.save(order)).thenReturn(order);
         Optional<Order> actual = orderService.createOrder(order);
         Optional<Order> expect = Optional.of(order);
         assertEquals(expect, actual);
@@ -78,7 +78,7 @@ class OrderServiceImplTest {
 
     @Test
     void findOrder() {
-        when(orderDao.findById(1L)).thenReturn(Optional.of(order));
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         Optional<Order> actual = orderService.findOrder(1L);
         Optional<Order> expect = Optional.of(order);
         assertEquals(expect, actual);
@@ -86,9 +86,9 @@ class OrderServiceImplTest {
 
     @Test
     void addGiftCertificateToOrder() {
-        when(orderDao.findById(1L)).thenReturn(Optional.of(order));
-        when(giftCertificateDao.findById(1L)).thenReturn(Optional.of(giftCertificate));
-        when(orderItemDao.create(orderItem)).thenReturn(orderItem);
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        when(giftCertificateRepository.findById(1L)).thenReturn(Optional.of(giftCertificate));
+        when(orderItemRepository.save(orderItem)).thenReturn(orderItem);
         Optional<OrderItem> actual = orderService.addGiftCertificateToOrder(1L, 1L, orderItem);
         Optional<OrderItem> expect = Optional.of(orderItem);
         assertEquals(expect, actual);
