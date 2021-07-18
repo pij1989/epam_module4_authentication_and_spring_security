@@ -1,8 +1,8 @@
 package com.epam.esm.model.service;
 
 import com.epam.esm.model.entity.GiftCertificate;
-import com.epam.esm.model.entity.Page;
 import com.epam.esm.model.entity.Tag;
+import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
 import java.util.List;

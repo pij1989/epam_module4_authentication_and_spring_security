@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
         if (page == 0 || size == 0) {
             return new PageImpl<>(Collections.emptyList());
         }
-        return userRepository.findAll(PageRequest.of(page - 1, size));
+        return userRepository.findAllByOrderByIdAsc(PageRequest.of(page - 1, size));
     }
 
     @Override
@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService {
         Page<Order> createdPage = null;
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
-            createdPage = orderRepository.findAll(PageRequest.of(page - 1, size));
+            createdPage = orderRepository.findAllByOrderByIdAsc(PageRequest.of(page - 1, size));
         }
         return createdPage;
     }

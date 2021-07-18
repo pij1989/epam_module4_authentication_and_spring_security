@@ -59,6 +59,6 @@ public class TagServiceImpl implements TagService {
         if (page == 0 || size == 0) {
             return new PageImpl<>(Collections.emptyList());
         }
-        return tagRepository.findAll(PageRequest.of(page - 1, size));
+        return tagRepository.findAllByOrderByIdAsc(PageRequest.of(page - 1, size));
     }
 }
