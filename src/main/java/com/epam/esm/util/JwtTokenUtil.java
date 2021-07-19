@@ -29,13 +29,7 @@ public class JwtTokenUtil {
     }
 
     public String getUsernameFromToken(String token) {
-        return parseUsernameFromToken(token);
-    }
-
-    public boolean validateToken(String token, UserDetails userDetails) {
-        String username = parseUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-
+        return getAllClaimsFromToken(token).getSubject();
     }
 
     public boolean validate(String token) {
@@ -56,18 +50,7 @@ public class JwtTokenUtil {
         return false;
     }
 
-    private String parseUsernameFromToken(String token) {
-        return getAllClaimsFromToken(token).getSubject();
-    }
-
     private Claims getAllClaimsFromToken(String token) {
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     }
-
-    private Boolean isTokenExpired(String token) {
-        final Date expiration = getAllClaimsFromToken(token).getExpiration();
-        return expiration.before(new Date());
-    }
-
-
 }
