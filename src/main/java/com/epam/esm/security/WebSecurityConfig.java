@@ -3,6 +3,7 @@ package com.epam.esm.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -24,6 +25,7 @@ import org.springframework.web.filter.CorsFilter;
 
 import static com.epam.esm.model.entity.Role.RoleType.*;
 
+@Profile("!oauth2")
 @Configuration
 @EnableWebSecurity(debug = true)
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)

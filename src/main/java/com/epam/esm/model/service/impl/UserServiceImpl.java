@@ -1,9 +1,7 @@
 package com.epam.esm.model.service.impl;
 
 import com.epam.esm.model.entity.*;
-import com.epam.esm.model.repository.OrderRepository;
-import com.epam.esm.model.repository.TagRepository;
-import com.epam.esm.model.repository.UserRepository;
+import com.epam.esm.model.repository.*;
 import com.epam.esm.model.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,14 +19,18 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final TagRepository tagRepository;
+    private final RoleRepository roleRepository;
+    private final StatusRepository statusRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, OrderRepository orderRepository,
-                           TagRepository tagRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, OrderRepository orderRepository, TagRepository tagRepository,
+                           RoleRepository roleRepository, StatusRepository statusRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.tagRepository = tagRepository;
+        this.roleRepository = roleRepository;
+        this.statusRepository = statusRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -38,6 +40,10 @@ public class UserServiceImpl implements UserService {
         if (user != null) {
             String password = user.getPassword();
             user.setPassword(passwordEncoder.encode(password));
+            Role role = roleRepository.findByRoleType(user.getRole().getRoleType());
+            Status status = statusRepository.findByStatusType(user.getStatus().getStatusType());
+            user.setRole(role);
+            user.setStatus(status);
             return Optional.of(userRepository.save(user));
         }
         return Optional.empty();
@@ -121,10 +127,8 @@ public class UserServiceImpl implements UserService {
         if (user != null) {
             String password = user.getPassword();
             user.setPassword(passwordEncoder.encode(password));
-            Role role = new Role();
-            role.setRoleType(Role.RoleType.USER);
-            Status status = new Status();
-            status.setStatusType(Status.StatusType.ACTIVE);
+            Role role = roleRepository.findByRoleType(Role.RoleType.USER);
+            Status status = statusRepository.findByStatusType(Status.StatusType.ACTIVE);
             user.setRole(role);
             user.setStatus(status);
             return Optional.of(userRepository.save(user));

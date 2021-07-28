@@ -20,7 +20,8 @@ public class App {
 
     public static void main(String[] args) {
         new SpringApplicationBuilder(App.class)
-                .profiles("dev")
+//                .profiles("prod","oauth2")
+                .profiles("prod")
                 .run(args);
     }
 }
