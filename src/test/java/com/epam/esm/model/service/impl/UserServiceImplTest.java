@@ -1,9 +1,7 @@
 package com.epam.esm.model.service.impl;
 
 import com.epam.esm.model.entity.*;
-import com.epam.esm.model.repository.OrderRepository;
-import com.epam.esm.model.repository.TagRepository;
-import com.epam.esm.model.repository.UserRepository;
+import com.epam.esm.model.repository.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +30,8 @@ class UserServiceImplTest {
     private Order firstOrder;
     private Order secondOrder;
     private User updatedUser;
+    private Role role;
+    private Status status;
 
     @Mock
     private UserRepository userRepository;
@@ -41,6 +41,12 @@ class UserServiceImplTest {
 
     @Mock
     private TagRepository tagRepository;
+
+    @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
+    private StatusRepository statusRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -57,10 +63,10 @@ class UserServiceImplTest {
         user.setUsername("Username");
         user.setEmail("user@gmail.com");
         user.setPassword("m5YQjQifDUhq9wj");
-        Role role = new Role();
+        role = new Role();
         role.setRoleType(Role.RoleType.USER);
         user.setRole(role);
-        Status status = new Status();
+        status = new Status();
         status.setStatusType(Status.StatusType.ACTIVE);
         user.setStatus(status);
         firstOrder = new Order();
@@ -91,6 +97,8 @@ class UserServiceImplTest {
         firstOrder = null;
         secondOrder = null;
         updatedUser = null;
+        role = null;
+        status = null;
     }
 
     @Test
@@ -98,6 +106,8 @@ class UserServiceImplTest {
         String encodePassword = "m5YQjQifDUhq9wjencode";
         when(userRepository.save(user)).thenReturn(user);
         when(passwordEncoder.encode(user.getPassword())).thenReturn(encodePassword);
+        when(roleRepository.findByRoleType(Role.RoleType.USER)).thenReturn(role);
+        when(statusRepository.findByStatusType(Status.StatusType.ACTIVE)).thenReturn(status);
         user.setPassword(encodePassword);
         Optional<User> actual = userService.createUser(user);
         Optional<User> expect = Optional.of(user);
