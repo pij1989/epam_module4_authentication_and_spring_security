@@ -1,6 +1,7 @@
 package com.epam.esm.security;
 
 import com.epam.esm.util.JwtTokenUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
-import static org.apache.logging.log4j.util.Strings.isEmpty;
 
 @Profile("!oauth2")
 @Component
@@ -41,7 +40,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String requestTokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (isEmpty(requestTokenHeader) || !requestTokenHeader.startsWith(BEARER_WORD)) {
+        if (StringUtils.isEmpty(requestTokenHeader) || !requestTokenHeader.startsWith(BEARER_WORD)) {
             logger.info("JWT Token does not begin with Bearer String or empty");
             filterChain.doFilter(request, response);
             return;
