@@ -47,6 +47,5 @@ test {
 compileJava.inputs.files(processResources)
 
 group 'com.epam.esm'
-version '1.0-SNAPSHOT'
 
 
