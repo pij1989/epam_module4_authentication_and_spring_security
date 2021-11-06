@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=rest_api_basics_db
+
+  web:
+    build: .
+    container_name: web
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
